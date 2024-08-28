@@ -128,6 +128,10 @@ kubectl apply -f node-pool-both.yml
 - Scale the deployment up to 12 replicas and evaluate Karpenter behavior (let's take alook on Karpenter logs)
 
 ```bash
+kubectl scale deployment inflate --replicas=12
+```
+
+```bash
 
 # Replace kube-system namespace if you installed Karpenter within another namespace 
 kubectl logs -n kube-system -c controller $(kubectl get pods -n kube-system -o name | grep karpenter | head -n 1) | less
