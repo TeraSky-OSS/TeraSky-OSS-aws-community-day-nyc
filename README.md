@@ -12,7 +12,32 @@ This scenario demonstrates the capabilities of Karpenter for dynamically managin
 ```bash
 kubectl proxy --accept-hosts '.*' &
 docker run -it -p 8080:8080 -e CLUSTERS=http://docker.for.mac.localhost:8001 hjacobs/kube-ops-view &
-kubectl port-forward --namespace monitoring svc/grafana 3000:80
+```
+
+### Install Karpenter on K8s Cluster
+
+Set environment variables
+After setting up the tools, set the Karpenter and Kubernetes version:
+
+```bash
+export KARPENTER_NAMESPACE="kube-system"
+export KARPENTER_VERSION="1.0.6"
+export K8S_VERSION="1.31"
+export CLUSTER_NAME="my-karpenter-demo"
+```
+
+```bash
+helm registry logout public.ecr.aws
+
+helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter --version "${KARPENTER_VERSION}" --namespace "${KARPENTER_NAMESPACE}" --create-namespace \
+  --set "settings.clusterName=${CLUSTER_NAME}" \
+  --set "settings.interruptionQueue=${CLUSTER_NAME}" \
+  --set controller.resources.requests.cpu=1 \
+  --set controller.resources.requests.memory=1Gi \
+  --set controller.resources.limits.cpu=1 \
+  --set controller.resources.limits.memory=1Gi \
+  --wait
+
 ```
 
 ## Install Prometheus and Grafana and add Persistent Volume for Grafana
@@ -49,6 +74,11 @@ spec:
   storageClassName: ""
   hostPath:
     path: "/mnt/data/prometheus-alertmanager"
+```
+
+now expose grafana locally
+```bash
+kubectl port-forward --namespace monitoring svc/grafana 3000:80
 ```
 
 
